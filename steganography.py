@@ -1,3 +1,5 @@
+from io import BytesIO
+
 from PIL import Image
 
 
@@ -16,20 +18,78 @@ def bytes_to_bits(data):
 def bits_to_bytes(bits):
     """Convert binary bits back into bytes."""
 
+    if len(bits) % 8 != 0:
+        raise ValueError(
+            "Invalid hidden data."
+        )
+
     return bytes(
         int(bits[i:i + 8], 2)
         for i in range(0, len(bits), 8)
     )
 
 
+# ==========================================================
+# HIDE DATA
+# ==========================================================
+
 def hide_data(image_path, data, output_path):
     """
-    Hide binary data inside an image using LSB.
+    Existing local file-based hiding function.
+
+    Keeps your current local application working.
     """
 
     image = Image.open(
         image_path
     ).convert("RGB")
+
+    stego_image = _embed_data(
+        image,
+        data
+    )
+
+    stego_image.save(
+        output_path,
+        format="PNG"
+    )
+
+    return output_path
+
+
+def hide_data_bytes(image_bytes, data):
+    """
+    Hide data inside an image supplied as bytes.
+
+    Used by Vercel.
+    Returns the generated PNG as bytes.
+    """
+
+    image = Image.open(
+        BytesIO(image_bytes)
+    ).convert("RGB")
+
+    stego_image = _embed_data(
+        image,
+        data
+    )
+
+    output = BytesIO()
+
+    stego_image.save(
+        output,
+        format="PNG"
+    )
+
+    output.seek(0)
+
+    return output.getvalue()
+
+
+def _embed_data(image, data):
+    """
+    Internal function that performs LSB embedding.
+    """
 
     pixels = list(
         image.getdata()
@@ -49,6 +109,7 @@ def hide_data(image_path, data, output_path):
     )
 
     if len(payload) > max_capacity:
+
         raise ValueError(
             "Data is too large for this image."
         )
@@ -88,21 +149,39 @@ def hide_data(image_path, data, output_path):
         new_pixels
     )
 
-    stego_image.save(
-        output_path,
-        format="PNG"
-    )
+    return stego_image
 
-    return output_path
 
+# ==========================================================
+# EXTRACT DATA
+# ==========================================================
 
 def extract_data(image_path):
     """
-    Extract hidden binary data from an image.
+    Existing local file-based extraction function.
+    """
+
+    with open(
+        image_path,
+        "rb"
+    ) as file:
+
+        image_bytes = file.read()
+
+    return extract_data_bytes(
+        image_bytes
+    )
+
+
+def extract_data_bytes(image_bytes):
+    """
+    Extract hidden data from image bytes.
+
+    Used by Vercel.
     """
 
     image = Image.open(
-        image_path
+        BytesIO(image_bytes)
     ).convert("RGB")
 
     pixels = list(
@@ -134,6 +213,7 @@ def extract_data(image_path):
     ]
 
     if not data_bits:
+
         raise ValueError(
             "Hidden data is empty."
         )

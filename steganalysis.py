@@ -1,44 +1,81 @@
+from io import BytesIO
+
 from PIL import Image
+
 import numpy as np
 
 
 def analyze_image(image_path):
     """
-    Analyze an image for statistical characteristics
-    that may indicate LSB steganography.
+    Existing local file-based analysis.
     """
 
-    image = Image.open(image_path).convert("RGB")
+    with open(
+        image_path,
+        "rb"
+    ) as file:
 
-    image_array = np.array(image)
+        image_bytes = file.read()
 
-    height, width, channels = image_array.shape
+    return analyze_image_bytes(
+        image_bytes
+    )
 
-    # --------------------------------------------------
-    # Basic image information
-    # --------------------------------------------------
 
-    total_pixels = height * width
+def analyze_image_bytes(image_bytes):
+    """
+    Analyze an image supplied as bytes.
+    Used by Vercel.
+    """
 
-    # --------------------------------------------------
-    # LSB analysis
-    # --------------------------------------------------
+    image = Image.open(
+        BytesIO(image_bytes)
+    ).convert("RGB")
 
-    lsb_values = image_array & 1
+    image_array = np.array(
+        image
+    )
 
-    total_lsb_bits = lsb_values.size
+    height, width, channels = (
+        image_array.shape
+    )
 
-    ones = np.sum(lsb_values)
+    total_pixels = (
+        height * width
+    )
 
-    zeros = total_lsb_bits - ones
+    # ==========================================
+    # LSB ANALYSIS
+    # ==========================================
 
-    lsb_one_ratio = ones / total_lsb_bits
+    lsb_values = (
+        image_array & 1
+    )
 
-    lsb_zero_ratio = zeros / total_lsb_bits
+    total_lsb_bits = (
+        lsb_values.size
+    )
 
-    # --------------------------------------------------
-    # Pixel statistics
-    # --------------------------------------------------
+    ones = np.sum(
+        lsb_values
+    )
+
+    zeros = (
+        total_lsb_bits
+        - ones
+    )
+
+    lsb_one_ratio = (
+        ones / total_lsb_bits
+    )
+
+    lsb_zero_ratio = (
+        zeros / total_lsb_bits
+    )
+
+    # ==========================================
+    # PIXEL STATISTICS
+    # ==========================================
 
     mean_value = float(
         np.mean(image_array)
@@ -52,9 +89,9 @@ def analyze_image(image_path):
         np.unique(image_array)
     )
 
-    # --------------------------------------------------
-    # Neighboring pixel differences
-    # --------------------------------------------------
+    # ==========================================
+    # PIXEL DIFFERENCES
+    # ==========================================
 
     horizontal_difference = np.abs(
         image_array[:, 1:, :].astype(int)
@@ -63,16 +100,14 @@ def analyze_image(image_path):
     )
 
     average_pixel_difference = float(
-        np.mean(horizontal_difference)
+        np.mean(
+            horizontal_difference
+        )
     )
 
-    # --------------------------------------------------
-    # LSB anomaly score
-    # --------------------------------------------------
-
-    # A perfectly balanced LSB distribution is
-    # not proof of steganography. It is only one
-    # statistical indicator.
+    # ==========================================
+    # LSB SCORE
+    # ==========================================
 
     balance_difference = abs(
         lsb_one_ratio - 0.5
@@ -94,9 +129,9 @@ def analyze_image(image_path):
 
         lsb_score = 20
 
-    # --------------------------------------------------
-    # Pixel variation score
-    # --------------------------------------------------
+    # ==========================================
+    # PIXEL SCORE
+    # ==========================================
 
     if average_pixel_difference > 35:
 
@@ -114,9 +149,9 @@ def analyze_image(image_path):
 
         pixel_score = 20
 
-    # --------------------------------------------------
-    # Overall suspicion score
-    # --------------------------------------------------
+    # ==========================================
+    # SUSPICION SCORE
+    # ==========================================
 
     suspicion_score = int(
         (lsb_score * 0.7)
@@ -124,15 +159,15 @@ def analyze_image(image_path):
         (pixel_score * 0.3)
     )
 
-    # --------------------------------------------------
-    # Classification
-    # --------------------------------------------------
+    # ==========================================
+    # CLASSIFICATION
+    # ==========================================
 
     if suspicion_score >= 70:
 
         classification = "HIGH"
 
-    elif suspicion_score >= 45:
+    elif suspicion_score >= 40:
 
         classification = "MEDIUM"
 
@@ -141,33 +176,47 @@ def analyze_image(image_path):
         classification = "LOW"
 
     return {
+
         "width": width,
+
         "height": height,
+
         "channels": channels,
+
         "total_pixels": total_pixels,
+
         "lsb_zero_ratio": round(
             lsb_zero_ratio * 100,
             2
         ),
+
         "lsb_one_ratio": round(
             lsb_one_ratio * 100,
             2
         ),
+
         "mean_pixel_value": round(
             mean_value,
             2
         ),
+
         "pixel_standard_deviation": round(
             standard_deviation,
             2
         ),
+
         "unique_values": unique_values,
+
         "average_pixel_difference": round(
             average_pixel_difference,
             2
         ),
+
         "lsb_score": lsb_score,
+
         "pixel_score": pixel_score,
+
         "suspicion_score": suspicion_score,
+
         "classification": classification
     }

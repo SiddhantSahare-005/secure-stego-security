@@ -1,5 +1,5 @@
+import io
 import os
-import uuid
 
 from flask import (
     Flask,
@@ -11,8 +11,6 @@ from flask import (
     send_file
 )
 
-from werkzeug.utils import secure_filename
-
 from crypto_utils import (
     encrypt_message,
     decrypt_message,
@@ -20,40 +18,32 @@ from crypto_utils import (
 )
 
 from steganography import (
-    hide_data,
-    extract_data
+    hide_data_bytes,
+    extract_data_bytes
 )
 
 from steganalysis import (
-    analyze_image
+    analyze_image_bytes
 )
 
 
+# ==========================================================
+# FLASK CONFIGURATION
+# ==========================================================
+
 app = Flask(__name__)
 
-app.secret_key = "stego-security-secret-key"
-
-
-UPLOAD_FOLDER = "uploads"
-OUTPUT_FOLDER = "output"
+app.secret_key = os.environ.get(
+    "FLASK_SECRET_KEY",
+    "development-secret-key"
+)
 
 ALLOWED_EXTENSIONS = {"png"}
 
 
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-app.config["OUTPUT_FOLDER"] = OUTPUT_FOLDER
-
-
-os.makedirs(
-    UPLOAD_FOLDER,
-    exist_ok=True
-)
-
-os.makedirs(
-    OUTPUT_FOLDER,
-    exist_ok=True
-)
-
+# ==========================================================
+# FILE VALIDATION
+# ==========================================================
 
 def allowed_file(filename):
 
@@ -114,6 +104,8 @@ def hide():
     )
 
 
+    # Validate image
+
     if image.filename == "":
 
         flash(
@@ -138,6 +130,8 @@ def hide():
         )
 
 
+    # Validate message
+
     if not message:
 
         flash(
@@ -148,6 +142,8 @@ def hide():
             url_for("index")
         )
 
+
+    # Validate password
 
     if not password:
 
@@ -160,33 +156,25 @@ def hide():
         )
 
 
-    unique_id = uuid.uuid4().hex
-
-    filename = secure_filename(
-        image.filename
-    )
-
-
-    input_path = os.path.join(
-        UPLOAD_FOLDER,
-        f"{unique_id}_{filename}"
-    )
-
-
-    output_path = os.path.join(
-        OUTPUT_FOLDER,
-        f"stego_{unique_id}.png"
-    )
-
-
-    image.save(
-        input_path
-    )
-
-
     try:
 
+        # ------------------------------------------
+        # Read image into memory
+        # ------------------------------------------
+
+        image_bytes = image.read()
+
+
+        if not image_bytes:
+
+            raise ValueError(
+                "The uploaded image is empty."
+            )
+
+
+        # ------------------------------------------
         # Encrypt message
+        # ------------------------------------------
 
         (
             salt,
@@ -198,24 +186,26 @@ def hide():
         )
 
 
+        # ------------------------------------------
         # Convert SHA-256 hash to bytes
+        # ------------------------------------------
 
         hash_bytes = message_hash.encode()
 
-
-        # Store hash length
 
         hash_length = len(
             hash_bytes
         )
 
 
-        # Payload structure:
+        # ------------------------------------------
+        # Create hidden payload
         #
-        # 16 bytes  -> salt
-        # 4 bytes   -> hash length
-        # 64 bytes  -> SHA-256 hash
-        # remaining -> encrypted message
+        # 16 bytes  → salt
+        # 4 bytes   → hash length
+        # 64 bytes  → SHA-256 hash
+        # remaining → encrypted message
+        # ------------------------------------------
 
         payload = (
             salt
@@ -228,12 +218,25 @@ def hide():
         )
 
 
-        # Hide encrypted payload
+        # ------------------------------------------
+        # Hide encrypted payload in image
+        # ------------------------------------------
 
-        hide_data(
-            input_path,
-            payload,
-            output_path
+        stego_bytes = hide_data_bytes(
+            image_bytes,
+            payload
+        )
+
+
+        # ------------------------------------------
+        # Return stego image
+        # ------------------------------------------
+
+        return send_file(
+            io.BytesIO(stego_bytes),
+            mimetype="image/png",
+            as_attachment=True,
+            download_name="stego_image.png"
         )
 
 
@@ -250,7 +253,10 @@ def hide():
 
     except Exception as error:
 
-        print(error)
+        print(
+            "Hide error:",
+            error
+        )
 
         flash(
             "Error while encrypting and hiding data."
@@ -259,14 +265,6 @@ def hide():
         return redirect(
             url_for("index")
         )
-
-
-    return render_template(
-        "success.html",
-        filename=os.path.basename(
-            output_path
-        )
-    )
 
 
 # ==========================================================
@@ -300,6 +298,8 @@ def extract():
     )
 
 
+    # Validate image
+
     if image.filename == "":
 
         flash(
@@ -324,6 +324,8 @@ def extract():
         )
 
 
+    # Validate password
+
     if not password:
 
         flash(
@@ -335,36 +337,30 @@ def extract():
         )
 
 
-    unique_id = uuid.uuid4().hex
-
-    filename = secure_filename(
-        image.filename
-    )
-
-
-    input_path = os.path.join(
-        UPLOAD_FOLDER,
-        f"extract_{unique_id}_{filename}"
-    )
-
-
-    image.save(
-        input_path
-    )
-
-
     try:
 
-        # Extract hidden payload
+        # ------------------------------------------
+        # Read image into memory
+        # ------------------------------------------
 
-        payload = extract_data(
-            input_path
+        image_bytes = image.read()
+
+
+        if not image_bytes:
+
+            raise ValueError(
+                "The uploaded image is empty."
+            )
+
+
+        # ------------------------------------------
+        # Extract hidden payload
+        # ------------------------------------------
+
+        payload = extract_data_bytes(
+            image_bytes
         )
 
-
-        # -------------------------------
-        # Extract salt
-        # -------------------------------
 
         if len(payload) < 20:
 
@@ -373,12 +369,16 @@ def extract():
             )
 
 
+        # ------------------------------------------
+        # Extract salt
+        # ------------------------------------------
+
         salt = payload[:16]
 
 
-        # -------------------------------
+        # ------------------------------------------
         # Extract hash length
-        # -------------------------------
+        # ------------------------------------------
 
         hash_length = int.from_bytes(
             payload[16:20],
@@ -386,9 +386,16 @@ def extract():
         )
 
 
-        # -------------------------------
-        # Extract original hash
-        # -------------------------------
+        if hash_length <= 0:
+
+            raise ValueError(
+                "Invalid integrity data."
+            )
+
+
+        # ------------------------------------------
+        # Extract original SHA-256 hash
+        # ------------------------------------------
 
         hash_start = 20
 
@@ -398,14 +405,21 @@ def extract():
         )
 
 
+        if len(payload) < hash_end:
+
+            raise ValueError(
+                "Invalid hidden payload."
+            )
+
+
         original_hash = payload[
             hash_start:hash_end
         ].decode()
 
 
-        # -------------------------------
+        # ------------------------------------------
         # Extract encrypted message
-        # -------------------------------
+        # ------------------------------------------
 
         encrypted_message = payload[
             hash_end:
@@ -419,9 +433,9 @@ def extract():
             )
 
 
-        # -------------------------------
-        # Decrypt
-        # -------------------------------
+        # ------------------------------------------
+        # Decrypt message
+        # ------------------------------------------
 
         message = decrypt_message(
             encrypted_message,
@@ -430,9 +444,9 @@ def extract():
         )
 
 
-        # -------------------------------
+        # ------------------------------------------
         # Verify integrity
-        # -------------------------------
+        # ------------------------------------------
 
         integrity_valid = verify_integrity(
             message,
@@ -447,9 +461,16 @@ def extract():
                 success=False,
                 message=None,
                 integrity=False,
-                error="Integrity verification failed."
+                error=(
+                    "Integrity verification failed. "
+                    "The hidden data may have been modified."
+                )
             )
 
+
+        # ------------------------------------------
+        # Successful extraction
+        # ------------------------------------------
 
         return render_template(
             "result.html",
@@ -462,7 +483,10 @@ def extract():
 
     except Exception as error:
 
-        print(error)
+        print(
+            "Extraction error:",
+            error
+        )
 
         return render_template(
             "result.html",
@@ -470,8 +494,8 @@ def extract():
             message=None,
             integrity=False,
             error=(
-                "Incorrect password or "
-                "invalid stego image."
+                "Incorrect password or invalid "
+                "stego image."
             )
         )
 
@@ -502,6 +526,8 @@ def analyze():
     ]
 
 
+    # Validate image
+
     if image.filename == "":
 
         flash(
@@ -526,30 +552,34 @@ def analyze():
         )
 
 
-    unique_id = uuid.uuid4().hex
-
-    filename = secure_filename(
-        image.filename
-    )
-
-
-    input_path = os.path.join(
-        UPLOAD_FOLDER,
-        f"analysis_{unique_id}_{filename}"
-    )
-
-
-    image.save(
-        input_path
-    )
-
-
     try:
 
-        results = analyze_image(
-            input_path
+        # ------------------------------------------
+        # Read image into memory
+        # ------------------------------------------
+
+        image_bytes = image.read()
+
+
+        if not image_bytes:
+
+            raise ValueError(
+                "The uploaded image is empty."
+            )
+
+
+        # ------------------------------------------
+        # Analyze image
+        # ------------------------------------------
+
+        results = analyze_image_bytes(
+            image_bytes
         )
 
+
+        # ------------------------------------------
+        # Display analysis result
+        # ------------------------------------------
 
         return render_template(
             "analysis.html",
@@ -559,7 +589,10 @@ def analyze():
 
     except Exception as error:
 
-        print(error)
+        print(
+            "Analysis error:",
+            error
+        )
 
         flash(
             "Unable to analyze the image."
@@ -571,46 +604,7 @@ def analyze():
 
 
 # ==========================================================
-# DOWNLOAD
-# ==========================================================
-
-@app.route(
-    "/download/<filename>"
-)
-def download(filename):
-
-    safe_filename = secure_filename(
-        filename
-    )
-
-
-    file_path = os.path.join(
-        OUTPUT_FOLDER,
-        safe_filename
-    )
-
-
-    if not os.path.exists(
-        file_path
-    ):
-
-        flash(
-            "File not found."
-        )
-
-        return redirect(
-            url_for("index")
-        )
-
-
-    return send_file(
-        file_path,
-        as_attachment=True
-    )
-
-
-# ==========================================================
-# RUN
+# LOCAL DEVELOPMENT
 # ==========================================================
 
 if __name__ == "__main__":
