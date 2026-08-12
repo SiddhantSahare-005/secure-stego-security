@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Stego Security
+    </title>
+
+</head>
+
+
+<body>
+
+    <h1>
+        🔐 Stego Security
+    </h1>
+
+    <p>
+        Secure Image Steganography & Steganalysis
+    </p>
+
+
+    <!-- ========================================= -->
+    <!-- FLASH MESSAGES -->
+    <!-- ========================================= -->
+
+
+    {% with messages = get_flashed_messages() %}
+
+        {% if messages %}
+
+            {% for message in messages %}
+
+                <p>
+                    ⚠️ {{ message }}
+                </p>
+
+            {% endfor %}
+
+        {% endif %}
+
+    {% endwith %}
+
+
+    <hr>
+
+
+    <!-- ========================================= -->
+    <!-- ENCRYPT + HIDE -->
+    <!-- ========================================= -->
+
+
+    <h2>
+        🔒 Encrypt & Hide
+    </h2>
+
+    <p>
+        Encrypt a secret message and hide it
+        inside a PNG image.
+    </p>
+
+
+    <form
+        action="/hide"
+        method="POST"
+        enctype="multipart/form-data"
+    >
+
+
+        <p>
+
+            <label>
+                <strong>
+                    Select PNG Image
+                </strong>
+            </label>
+
+        </p>
+
+
+        <input
+            type="file"
+            name="image"
+            accept=".png"
+            required
+        >
+
+
+        <p>
+
+            <label>
+                <strong>
+                    Secret Message
+                </strong>
+            </label>
+
+        </p>
+
+
+        <textarea
+            name="message"
+            rows="6"
+            cols="60"
+            placeholder="Enter your secret message..."
+            required
+        ></textarea>
+
+
+        <p>
+
+            <label>
+                <strong>
+                    Password
+                </strong>
+            </label>
+
+        </p>
+
+
+        <input
+            type="password"
+            name="password"
+            placeholder="Enter encryption password"
+            required
+        >
+
+
+        <br>
+        <br>
+
+
+        <button type="submit">
+
+            🔐 Encrypt & Hide
+
+        </button>
+
+
+    </form>
+
+
+    <hr>
+
+
+    <!-- ========================================= -->
+    <!-- EXTRACT + DECRYPT -->
+    <!-- ========================================= -->
+
+
+    <h2>
+        🔓 Extract & Decrypt
+    </h2>
+
+    <p>
+        Extract and decrypt a hidden message
+        from a stego PNG.
+    </p>
+
+
+    <form
+        action="/extract"
+        method="POST"
+        enctype="multipart/form-data"
+    >
+
+
+        <p>
+
+            <label>
+                <strong>
+                    Select Stego PNG
+                </strong>
+            </label>
+
+        </p>
+
+
+        <input
+            type="file"
+            name="stego_image"
+            accept=".png"
+            required
+        >
+
+
+        <p>
+
+            <label>
+                <strong>
+                    Password
+                </strong>
+            </label>
+
+        </p>
+
+
+        <input
+            type="password"
+            name="extract_password"
+            placeholder="Enter decryption password"
+            required
+        >
+
+
+        <br>
+        <br>
+
+
+        <button type="submit">
+
+            🔓 Extract Message
+
+        </button>
+
+
+    </form>
+
+
+    <hr>
+
+
+    <!-- ========================================= -->
+    <!-- STEGANALYSIS -->
+    <!-- ========================================= -->
+
+
+    <h2>
+        🔍 Steganalysis
+    </h2>
+
+
+    <p>
+        Analyze a PNG image for statistical
+        characteristics that may indicate
+        hidden data.
+    </p>
+
+
+    <form
+        action="/analyze"
+        method="POST"
+        enctype="multipart/form-data"
+    >
+
+
+        <p>
+
+            <label>
+                <strong>
+                    Select PNG Image
+                </strong>
+            </label>
+
+        </p>
+
+
+        <input
+            type="file"
+            name="analysis_image"
+            accept=".png"
+            required
+        >
+
+
+        <br>
+        <br>
+
+
+        <button type="submit">
+
+            🔍 Analyze Image
+
+        </button>
+
+
+    </form>
+
+
+    <hr>
+
+
+    <p>
+
+        <strong>
+            Security Features:
+        </strong>
+
+    </p>
+
+
+    <ul>
+
+        <li>
+            AES-based message encryption
+        </li>
+
+        <li>
+            Password-based key derivation
+        </li>
+
+        <li>
+            LSB image steganography
+        </li>
+
+        <li>
+            SHA-256 integrity verification
+        </li>
+
+        <li>
+            Statistical steganalysis
+        </li>
+
+    </ul>
+
+
+</body>
+
+</html>

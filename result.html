@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Extraction Result</title>
+
+</head>
+
+
+<body>
+
+    {% if success %}
+
+        <h1>
+            ✅ Message Successfully Extracted
+        </h1>
+
+
+        <h2>
+            Secret Message
+        </h2>
+
+
+        <div>
+
+            <p>
+                {{ message }}
+            </p>
+
+        </div>
+
+
+        {% if integrity %}
+
+            <h3>
+                ✅ Integrity Verified
+            </h3>
+
+            <p>
+                SHA-256 verification successful.
+            </p>
+
+            <p>
+                The extracted message matches
+                the original message.
+            </p>
+
+        {% else %}
+
+            <h3>
+                ❌ Integrity Check Failed
+            </h3>
+
+        {% endif %}
+
+
+    {% else %}
+
+        <h1>
+            ❌ Extraction Failed
+        </h1>
+
+
+        <p>
+            {{ error }}
+        </p>
+
+
+        <p>
+            Possible reasons:
+        </p>
+
+
+        <ul>
+
+            <li>
+                Incorrect password
+            </li>
+
+            <li>
+                Image does not contain hidden data
+            </li>
+
+            <li>
+                Image was modified
+            </li>
+
+            <li>
+                Image was converted from PNG
+            </li>
+
+        </ul>
+
+    {% endif %}
+
+
+    <br>
+
+
+    <a href="/">
+        ← Back to Stego Security
+    </a>
+
+
+</body>
+
+</html>

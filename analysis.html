@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Steganalysis Result
+    </title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .result {
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .score {
+            font-size: 48px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px;
+        }
+
+        .classification {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .bar-container {
+            width: 100%;
+            height: 30px;
+            background: #eee;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .bar {
+            height: 100%;
+            width: {{ results.suspicion_score }}%;
+            background: #555;
+        }
+
+        .range-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .range-table th,
+        .range-table td {
+            border: 1px solid #ccc;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .metric {
+            margin: 10px 0;
+        }
+
+        .note {
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .back {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <h1>
+        Steganalysis Result
+    </h1>
+
+
+    <!-- ========================================= -->
+    <!-- OVERALL RESULT -->
+    <!-- ========================================= -->
+
+
+    <div class="result">
+
+        <h2>
+            Overall Assessment
+        </h2>
+
+
+        <div class="score">
+
+            {{ results.suspicion_score }}/100
+
+        </div>
+
+
+        <div class="bar-container">
+
+            <div class="bar"></div>
+
+        </div>
+
+
+        <div class="classification">
+
+            {% if results.suspicion_score >= 70 %}
+
+                HIGH SUSPICION
+
+            {% elif results.suspicion_score >= 40 %}
+
+                MEDIUM SUSPICION
+
+            {% else %}
+
+                LOW SUSPICION
+
+            {% endif %}
+
+        </div>
+
+
+        <br>
+
+
+        {% if results.suspicion_score >= 70 %}
+
+            <p>
+                This image shows strong statistical
+                characteristics that may be associated
+                with hidden data.
+            </p>
+
+        {% elif results.suspicion_score >= 40 %}
+
+            <p>
+                This image shows some unusual
+                statistical characteristics.
+                Further investigation may be required.
+            </p>
+
+        {% else %}
+
+            <p>
+                This image does not show strong
+                statistical indicators associated
+                with hidden data.
+            </p>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- ========================================= -->
+    <!-- SCORE INTERPRETATION -->
+    <!-- ========================================= -->
+
+
+    <div class="result">
+
+        <h2>
+            Score Interpretation
+        </h2>
+
+
+        <table class="range-table">
+
+            <tr>
+
+                <th>
+                    Score Range
+                </th>
+
+                <th>
+                    Level
+                </th>
+
+                <th>
+                    Interpretation
+                </th>
+
+            </tr>
+
+
+            <tr>
+
+                <td>
+                    0 – 39
+                </td>
+
+                <td>
+                    LOW
+                </td>
+
+                <td>
+                    Likely no hidden data detected
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td>
+                    40 – 69
+                </td>
+
+                <td>
+                    MEDIUM
+                </td>
+
+                <td>
+                    Suspicious — requires further investigation
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td>
+                    70 – 100
+                </td>
+
+                <td>
+                    HIGH
+                </td>
+
+                <td>
+                    Strong indication of possible hidden data
+                </td>
+
+            </tr>
+
+        </table>
+
+
+        <div class="note">
+
+            <strong>
+                Your Score:
+            </strong>
+
+            {{ results.suspicion_score }}/100
+
+            <br><br>
+
+            The score is a statistical suspicion
+            indicator. It does not prove that an image
+            contains hidden information.
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================= -->
+    <!-- IMAGE INFORMATION -->
+    <!-- ========================================= -->
+
+
+    <div class="result">
+
+        <h2>
+            Image Information
+        </h2>
+
+
+        <p class="metric">
+
+            <strong>
+                Width:
+            </strong>
+
+            {{ results.width }} pixels
+
+        </p>
+
+
+        <p class="metric">
+
+            <strong>
+                Height:
+            </strong>
+
+            {{ results.height }} pixels
+
+        </p>
+
+
+        <p class="metric">
+
+            <strong>
+                Total Pixels:
+            </strong>
+
+            {{ results.total_pixels }}
+
+        </p>
+
+
+        <p class="metric">
+
+            <strong>
+                Channels:
+            </strong>
+
+            {{ results.channels }}
+
+        </p>
+
+    </div>
+
+
+    <!-- ========================================= -->
+    <!-- LSB ANALYSIS -->
+    <!-- ========================================= -->
+
+
+    <div class="result">
+
+        <h2>
+            LSB Analysis
+        </h2>
+
+
+        <p class="metric">
+
+            <strong>
+                LSB 0:
+            </strong>
+
+            {{ results.lsb_zero_ratio }}%
+
+        </p>
+
+
+        <p class="metric">
+
+            <strong>
+                LSB 1:
+            </strong>
+
+            {{ results.lsb_one_ratio }}%
+
+        </p>
+
+
+        <p class="metric">
+
+            <strong>
+                LSB Anomaly Score:
+            </strong>
+
+            {{ results.lsb_score }}/100
+
+        </p>
+
+    </div>
+
+
+    <!-- ========================================= -->
+    <!-- PIXEL STATISTICS -->
+    <!-- ========================================= -->
+
+
+    <div class="result">
+
+        <h2>
+            Pixel Statistics
+        </h2>
+
+
+        <p class="metric">
+
+            <strong>
+                Mean Pixel Value:
+            </strong>
+
+            {{ results.mean_pixel_value }}
+
+        </p>
+
+
+        <p class="metric">
+
+            <strong>
+                Standard Deviation:
+            </strong>
+
+            {{ results.pixel_standard_deviation }}
+
+        </p>
+
+
+        <p class="metric">
+
+            <strong>
+                Unique Values:
+            </strong>
+
+            {{ results.unique_values }}
+
+        </p>
+
+
+        <p class="metric">
+
+            <strong>
+                Average Pixel Difference:
+            </strong>
+
+            {{ results.average_pixel_difference }}
+
+        </p>
+
+
+        <p class="metric">
+
+            <strong>
+                Pixel Variation Score:
+            </strong>
+
+            {{ results.pixel_score }}/100
+
+        </p>
+
+    </div>
+
+
+    <!-- ========================================= -->
+    <!-- EXPLANATION -->
+    <!-- ========================================= -->
+
+
+    <div class="result">
+
+        <h2>
+            What does this mean?
+        </h2>
+
+
+        <p>
+            The system examines the image's pixel
+            and least-significant-bit characteristics
+            to identify statistical patterns that can
+            be associated with steganography.
+        </p>
+
+
+        <p>
+            A higher score means the image has more
+            characteristics that warrant investigation.
+        </p>
+
+
+        <p>
+            A high score does not guarantee that hidden
+            data exists, since natural images can also
+            produce unusual statistical patterns.
+        </p>
+
+    </div>
+
+
+    <a
+        href="/"
+        class="back"
+    >
+
+        ← Back to Stego Security
+
+    </a>
+
+
+</body>
+
+</html>
