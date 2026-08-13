@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#050711">
+    <title>SCAN COMPLETE // STEGO</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="noise"></div>
+    <div class="grid"></div>
+    <div class="orb orb-cyan"></div>
+    <div class="orb orb-pink"></div>
+
+    <div class="app-shell">
+        <header class="topbar">
+            <a class="brand" href="/"><span class="brand-mark">S</span><span>STEGO<span class="brand-slash">//</span>SEC</span></a>
+            <div class="system-status"><span class="status-dot"></span> ANALYSIS COMPLETE</div>
+        </header>
+
+        <main>
+            {% set level = 'high' if results.suspicion_score >= 70 else ('medium' if results.suspicion_score >= 40 else 'low') %}
+            {% set level_label = 'HIGH SUSPICION' if level == 'high' else ('MEDIUM SUSPICION' if level == 'medium' else 'LOW SUSPICION') %}
+
+            <section class="result-hero reveal">
+                <div class="terminal-line"><span>root@stego-sec:~$</span> ./analyze --report<span class="cursor"></span></div>
+                <div class="result-kicker">FORENSIC IMAGE SCAN // COMPLETE</div>
+                <h1 class="hero-title small" data-text="SCAN COMPLETE">SCAN COMPLETE</h1>
+            </section>
+
+            <section class="score-panel lvl-{{ level }} reveal">
+                <div class="score-side">
+                    <span class="module-id">OVERALL ASSESSMENT</span>
+                    <div class="score-display">{{ results.suspicion_score }}<small>/100</small></div>
+                    <div class="classification">{{ level_label }}</div>
+                    <p>
+                        {% if level == 'high' %}
+                            Strong statistical characteristics may be associated with hidden data.
+                        {% elif level == 'medium' %}
+                            Unusual statistical characteristics detected. Further investigation may be required.
+                        {% else %}
+                            No strong statistical indicators associated with hidden data were detected.
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="score-visual">
+                    <div class="radial" style="--score: {{ results.suspicion_score }}%;">
+                        <div><strong>{{ results.suspicion_score }}</strong><span>RISK</span></div>
+                    </div>
+                    <div class="susp-bar-track"><div class="susp-bar-fill" style="width: {{ results.suspicion_score }}%;"></div></div>
+                </div>
+            </section>
+
+            <section class="data-grid">
+                <article class="data-panel reveal">
+                    <div class="data-head"><span>01 // IMAGE INFORMATION</span><i></i></div>
+                    <div class="metric-grid">
+                        <div class="metric"><small>WIDTH</small><strong>{{ results.width }}<b> px</b></strong></div>
+                        <div class="metric"><small>HEIGHT</small><strong>{{ results.height }}<b> px</b></strong></div>
+                        <div class="metric"><small>TOTAL PIXELS</small><strong>{{ results.total_pixels }}</strong></div>
+                        <div class="metric"><small>CHANNELS</small><strong>{{ results.channels }}</strong></div>
+                    </div>
+                </article>
+
+                <article class="data-panel reveal">
+                    <div class="data-head"><span>02 // LSB ANALYSIS</span><i></i></div>
+                    <div class="metric-grid">
+                        <div class="metric"><small>LSB 0</small><strong>{{ results.lsb_zero_ratio }}<b>%</b></strong></div>
+                        <div class="metric"><small>LSB 1</small><strong>{{ results.lsb_one_ratio }}<b>%</b></strong></div>
+                        <div class="metric metric-wide"><small>ANOMALY SCORE</small><strong>{{ results.lsb_score }}<b>/100</b></strong></div>
+                    </div>
+                </article>
+
+                <article class="data-panel reveal wide-panel">
+                    <div class="data-head"><span>03 // PIXEL STATISTICS</span><i></i></div>
+                    <div class="metric-grid five">
+                        <div class="metric"><small>MEAN PIXEL</small><strong>{{ results.mean_pixel_value }}</strong></div>
+                        <div class="metric"><small>STD. DEV.</small><strong>{{ results.pixel_standard_deviation }}</strong></div>
+                        <div class="metric"><small>UNIQUE VALUES</small><strong>{{ results.unique_values }}</strong></div>
+                        <div class="metric"><small>AVG. DIFFERENCE</small><strong>{{ results.average_pixel_difference }}</strong></div>
+                        <div class="metric"><small>VARIATION SCORE</small><strong>{{ results.pixel_score }}<b>/100</b></strong></div>
+                    </div>
+                </article>
+
+                <article class="data-panel reveal">
+                    <div class="data-head"><span>04 // SCORE MAP</span><i></i></div>
+                    <div class="score-map">
+                        <div><span>0</span><i></i><span>39</span><em>LOW</em></div>
+                        <div><span>40</span><i></i><span>69</span><em>MEDIUM</em></div>
+                        <div><span>70</span><i></i><span>100</span><em>HIGH</em></div>
+                    </div>
+                </article>
+
+                <article class="data-panel reveal">
+                    <div class="data-head"><span>05 // INTERPRETATION</span><i></i></div>
+                    <div class="explain">
+                        <p>The system examines pixel and least-significant-bit characteristics for statistical patterns associated with steganography.</p>
+                        <p>A higher score means more characteristics warrant investigation.</p>
+                        <p class="muted">A high score does not prove hidden data exists. Natural images can also produce unusual statistical patterns.</p>
+                    </div>
+                </article>
+            </section>
+
+            <div class="back-row reveal"><a href="/" class="cyber-link">← RETURN TO CONTROL CENTER</a></div>
+        </main>
+
+        <footer class="footer">
+            <span>STEGO-SEC <b>v2.0</b></span><span>LOCAL PROCESSING ONLY</span><span>STATUS: <em>OPERATIONAL</em></span>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

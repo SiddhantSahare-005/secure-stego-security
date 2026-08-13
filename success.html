@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#050711">
+    <title>PAYLOAD HIDDEN // STEGO</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="noise"></div>
+    <div class="grid"></div>
+    <div class="orb orb-cyan"></div>
+    <div class="orb orb-pink"></div>
+
+    <div class="app-shell">
+        <header class="topbar">
+            <a class="brand" href="/"><span class="brand-mark">S</span><span>STEGO<span class="brand-slash">//</span>SEC</span></a>
+            <div class="system-status"><span class="status-dot"></span> OPERATION COMPLETE</div>
+        </header>
+
+        <main>
+            <section class="result-hero reveal">
+                <div class="terminal-line"><span>root@stego-sec:~$</span> ./hide --status<span class="cursor"></span></div>
+                <div class="result-kicker ok">ENCRYPTION + STEGANOGRAPHY</div>
+                <h1 class="hero-title small" data-text="PAYLOAD HIDDEN">PAYLOAD HIDDEN</h1>
+            </section>
+
+            <section class="success-panel reveal">
+                <div class="success-banner">
+                    <span class="status-icon">OK</span>
+                    YOUR ENCRYPTED MESSAGE HAS BEEN SUCCESSFULLY HIDDEN INSIDE THE IMAGE.
+                </div>
+
+                <div class="success-visual">
+                    <div class="success-ring"><span>✓</span></div>
+                    <div>
+                        <strong>STEGO IMAGE READY</strong>
+                        <small>The carrier image is available for download.</small>
+                    </div>
+                </div>
+
+                <a class="cyber-btn cyan download-btn" href="{{ url_for('download', filename=filename) }}">
+                    <span>DOWNLOAD STEGO IMAGE</span><b>↓</b>
+                </a>
+
+                <div class="back-row"><a href="{{ url_for('index') }}" class="cyber-link">← HIDE ANOTHER MESSAGE</a></div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <span>STEGO-SEC <b>v2.0</b></span><span>LOCAL PROCESSING ONLY</span><span>STATUS: <em>OPERATIONAL</em></span>
+        </footer>
+    </div>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

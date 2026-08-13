@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#050711">
+    <title>EXTRACTION RESULT // STEGO</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="noise"></div>
+    <div class="grid"></div>
+    <div class="orb orb-cyan"></div>
+    <div class="orb orb-pink"></div>
+
+    <div class="app-shell">
+        <header class="topbar">
+            <a class="brand" href="/"><span class="brand-mark">S</span><span>STEGO<span class="brand-slash">//</span>SEC</span></a>
+            <div class="system-status"><span class="status-dot"></span> RECOVERY MODULE</div>
+        </header>
+
+        <main>
+            <section class="result-hero reveal">
+                <div class="terminal-line"><span>root@stego-sec:~$</span> ./extract --status<span class="cursor"></span></div>
+                {% if success %}
+                    <div class="result-kicker ok">PAYLOAD AUTHENTICATED</div>
+                    <h1 class="hero-title small" data-text="MESSAGE RECOVERED">MESSAGE RECOVERED</h1>
+                {% else %}
+                    <div class="result-kicker fail">PAYLOAD RECOVERY ERROR</div>
+                    <h1 class="hero-title small" data-text="EXTRACTION FAILED">EXTRACTION FAILED</h1>
+                {% endif %}
+            </section>
+
+            {% if success %}
+                <section class="success-panel reveal">
+                    <div class="success-banner">
+                        <span class="status-icon">OK</span>
+                        MESSAGE SUCCESSFULLY EXTRACTED
+                    </div>
+
+                    <div class="payload-box">
+                        <div class="data-head"><span>DECRYPTED PAYLOAD</span><i></i></div>
+                        <div class="message-box">{{ message }}</div>
+                    </div>
+
+                    {% if integrity %}
+                        <div class="integrity ok"><span>✓</span><div><strong>INTEGRITY VERIFIED</strong><small>SHA-256 checksum matches the original message.</small></div></div>
+                    {% else %}
+                        <div class="integrity fail"><span>!</span><div><strong>INTEGRITY CHECK FAILED</strong><small>The extracted message does not match its checksum.</small></div></div>
+                    {% endif %}
+                </section>
+            {% else %}
+                <section class="success-panel failure reveal">
+                    <div class="success-banner"><span class="status-icon">FAIL</span>{{ error }}</div>
+                    <div class="reason-title">POSSIBLE REASONS</div>
+                    <div class="reason-grid">
+                        <div>01 <span>Incorrect password</span></div>
+                        <div>02 <span>Image contains no hidden data</span></div>
+                        <div>03 <span>Image was modified</span></div>
+                        <div>04 <span>Image was converted from PNG</span></div>
+                    </div>
+                </section>
+            {% endif %}
+
+            <div class="back-row reveal"><a href="/" class="cyber-link">← RETURN TO CONTROL CENTER</a></div>
+        </main>
+
+        <footer class="footer">
+            <span>STEGO-SEC <b>v2.0</b></span><span>LOCAL PROCESSING ONLY</span><span>STATUS: <em>OPERATIONAL</em></span>
+        </footer>
+    </div>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
